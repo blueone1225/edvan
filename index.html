@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>追放重騎士的無雙冒險 - 貼圖解鎖版</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #12131c; color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 15px;
+        }
+        
+        #upload-panel {
+            width: 820px; background: #232636; border: 2px solid #4a4e69;
+            border-radius: 12px; padding: 12px; margin-bottom: 15px;
+        }
+        #upload-panel h3 { margin-bottom: 8px; color: #f4a261; font-size: 15px; text-align: center; }
+        .upload-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .upload-item { background: #161824; padding: 6px; border-radius: 6px; text-align: center; font-size: 11px; }
+        .upload-item label { display: block; margin-bottom: 3px; color: #a8dadc; font-weight: bold; }
+        .upload-item input[type="file"] { width: 100%; font-size: 10px; }
+
+        #game-container {
+            width: 820px; background: #1d1f2c; border: 4px solid #3d5a80;
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.9); overflow: hidden; display: flex; flex-direction: column;
+            position: relative;
+        }
+        header { background: #0f1017; padding: 12px; text-align: center; font-size: 22px; font-weight: bold; color: #fca311; border-bottom: 2px solid #3d5a80; }
+        
+        #battle-field {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            height: 330px; padding: 30px 50px; background: linear-gradient(to bottom, #1a1c29, #4a4e69); position: relative;
+        }
+        
+        .character-box { display: flex; flex-direction: column; align-items: center; width: 200px; position: relative; }
+        
+        .sprite {
+            width: 130px; height: 150px; border-radius: 12px; display: flex;
+            justify-content: center; align-items: center; font-size: 55px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6); background-size: cover; background-position: center;
+            transition: transform 0.1s, box-shadow 0.3s;
+        }
+        .knight-sprite { background-color: #4a5568; border: 3px solid #cbd5e0; }
+        .enemy-sprite { background-color: #742a2a; border: 3px solid #feb2b2; }
+        
+        .shake { animation: shakeAnim 0.3s ease-in-out; }
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-12px); }
+            40% { transform: translateX(12px); }
+            60% { transform: translateX(-8px); }
+            80% { transform: translateX(8px); }
+        }
+        .wall-active { box-shadow: 0 0 25px #48bb78, inset 0 0 15px #48bb78 !important; border-color: #48bb78 !important; }
+        
+        .status-bar { width: 100%; margin-top: 10px; background: rgba(0,0,0,0.7); padding: 8px; border-radius: 8px; }
+        .bar-bg { width: 100%; height: 12px; background: #333; border-radius: 6px; overflow: hidden; margin-top: 3px; }
+        .hp-fill { height: 100%; background: #e53e3e; width: 100%; transition: width 0.3s; }
+        .mp-fill { height: 100%; background: #3182ce; width: 100%; transition: width 0.3s; }
+        .stats-text { font-size: 11px; margin-top: 3px; display: flex; justify-content: space-between; color: #e2e8f0; }
+        
+        .buff-badge {
+            position: absolute; top: -35px; background: #d53f8c; color: #fff;
+            font-size: 12px; padding: 3px 10px; border-radius: 12px; font-weight: bold; display: none;
+            animation: pulse 1s infinite alternate; box-shadow: 0 0 10px #d53f8c;
+        }
+        .intent-badge {
+            position: absolute; top: -35px; background: #e53e3e; color: #fff;
+            font-size: 11px; padding: 2px 8px; border-radius: 8px; font-weight: bold; display: none;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+
+        #deck-panel { background: #12131a; padding: 12px; border-top: 2px solid #3d5a80; }
+        #deck-title { font-size: 13px; color: #f4a261; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .cards-container { display: flex; gap: 10px; }
+        
+        .card-btn {
+            flex: 1; padding: 10px; font-size: 13px; font-weight: bold; color: #fff;
+            background: #2d3748; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+            transition: all 0.2s; position: relative;
+        }
+        .card-btn:hover:not(:disabled) { background: #4a5568; transform: translateY(-3px); border-color: #cbd5e0; }
+        .card-btn:disabled { background: #1a202c; border-color: #2d3748; color: #4a5568; cursor: not-allowed; opacity: 0.6; }
+        .card-cost { font-size: 10px; color: #63b3ed; }
+        .card-desc { font-size: 10px; color: #cbd5e0; font-weight: normal; }
+        
+        #action-control { background: #0b0c10; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-action { padding: 8px 20px; font-size: 14px; font-weight: bold; color: #fff; background: #dd6b20; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-action:disabled { background: #4a5568; cursor: not-allowed; }
+
+        #log-panel { height: 120px; background: #08090c; padding: 10px 15px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.6; color: #a0aec0; border-top: 1px solid #2d3748; }
+        .log-entry { margin-bottom: 2px; }
+        .log-hero { color: #63b3ed; } .log-enemy { color: #fc8181; } .log-buff { color: #b794f4; font-weight: bold; } .log-skill { color: #f6ad55; font-weight: bold; } .log-poison { color: #68d391; }
+
+        /* 遊戲結束彈窗樣式 */
+        #game-over-modal {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.88); z-index: 100;
+            flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 30px; border-radius: 8px;
+        }
+        .modal-card {
+            background: #1e2230; border: 3px solid #f4a261; padding: 25px 35px; border-radius: 16px;
+            max-width: 500px; box-shadow: 0 0 25px rgba(244, 162, 97, 0.4);
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+        }
+        .modal-title { font-size: 24px; font-weight: bold; color: #e76f51; }
+        .modal-desc { font-size: 15px; line-height: 1.6; color: #e0e6ed; }
+        .btn-buy {
+            display: inline-block; padding: 12px 24px; font-size: 16px; font-weight: bold;
+            color: #ffffff; background: #06c755; text-decoration: none; border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(6, 199, 85, 0.4); transition: transform 0.2s, background 0.2s;
+            cursor: pointer;
+        }
+        .btn-buy:hover { transform: scale(1.05); background: #05b34c; }
+
+        /* 新增：完成購買解鎖按鈕樣式與動畫 */
+        .btn-unlock {
+            display: none; opacity: 0; max-height: 0; overflow: hidden;
+            padding: 0 24px; font-size: 15px; font-weight: bold;
+            color: #ffffff; background: #3182ce; border: none; border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(49, 130, 206, 0.4);
+            cursor: pointer; transition: all 0.5s ease-in-out;
+        }
+        .btn-unlock.show {
+            display: inline-block; opacity: 1; max-height: 60px; padding: 12px 24px; margin-top: 5px;
+            animation: fadeInSmooth 0.6s ease-forward;
+        }
+        .btn-unlock:hover { background: #2b6cb0; transform: scale(1.05); }
+
+        @keyframes fadeInSmooth {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="upload-panel">
+    <h3>🖼️ 自訂角色圖片 (上傳後自動保存於本地)</h3>
+    <div class="upload-grid">
+        <div class="upload-item"><label>🛡️ 轉生重騎士</label><input type="file" accept="image/*" onchange="uploadImage(event, 'hero')"></div>
+        <div class="upload-item"><label>🐸 1.毒青蛙</label><input type="file" accept="image/*" onchange="uploadImage(event, 0)"></div>
+        <div class="upload-item"><label>🧸 2.詛咒人偶</label><input type="file" accept="image/*" onchange="uploadImage(event, 1)"></div>
+        <div class="upload-item"><label>💂 3.連擊娃娃兵</label><input type="file" accept="image/*" onchange="uploadImage(event, 2)"></div>
+        <div class="upload-item"><label>🥷 4.紫髮劍聖</label><input type="file" accept="image/*" onchange="uploadImage(event, 3)"></div>
+    </div>
+</div>
+
+<div id="game-container">
+    <!-- 遊戲結束/破關 彈窗 overlay -->
+    <div id="game-over-modal">
+        <div class="modal-card">
+            <div id="modal-title" class="modal-title">☠️ 冒險結束</div>
+            <div id="modal-desc" class="modal-desc">
+                你的冒險在此畫下句點。<br>
+                <b>說明：需要前往購買一份 LINE 貼圖才能再次獲得遊玩資格！</b>
+            </div>
+            <a id="buy-link" class="btn-buy" href="https://store.line.me/stickershop/author/6324672/zh-Hant" target="_blank" onclick="onBuyClick()">
+                🛒 點此前往購買貼圖解鎖遊玩
+            </a>
+            <!-- 新增：平滑出現的解鎖按鈕 -->
+            <button id="unlock-btn" class="btn-unlock" onclick="unlockAndResetGame()">
+                ✅ 我已完成購買，解鎖關卡繼續遊玩
+            </button>
+        </div>
+    </div>
+
+    <header id="stage-title">關卡 1: 野生毒青蛙襲擊</header>
+
+    <div id="battle-field">
+        <div class="character-box">
+            <div id="hero-buff" class="buff-badge">瀕死狂暴！防禦x10</div>
+            <div class="sprite knight-sprite" id="hero-sprite">🛡️</div>
+            <div style="font-weight: bold; margin-top: 5px;">轉生重騎士</div>
+            <div class="status-bar">
+                <div class="stats-text"><span>HP</span><span id="hero-hp-text">200 / 200</span></div>
+                <div class="bar-bg"><div id="hero-hp-fill" class="hp-fill"></div></div>
+                <div class="stats-text"><span>MP</span><span id="hero-mp-text">50 / 50</span></div>
+                <div class="bar-bg"><div id="hero-mp-fill" class="mp-fill"></div></div>
+                <div class="stats-text"><span>ATK: <b id="hero-atk">15</b></span><span>DEF: <b id="hero-def">40</b></span></div>
+            </div>
+        </div>
+
+        <div class="character-box">
+            <div id="enemy-intent" class="intent-badge">⚔️ 準備重斬！</div>
+            <div class="sprite enemy-sprite" id="enemy-sprite">🐸</div>
+            <div style="font-weight: bold; margin-top: 5px;" id="enemy-name">劇毒青蛙</div>
+            <div class="status-bar">
+                <div class="stats-text"><span>HP</span><span id="enemy-hp-text">120 / 120</span></div>
+                <div class="bar-bg"><div id="enemy-hp-fill" class="hp-fill"></div></div>
+                <div class="stats-text"><span>ATK: <b id="enemy-atk">25</b></span><span>DEF: <b id="enemy-def">10</b></span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="deck-panel">
+        <div id="deck-title">
+            <span>🎴 回合手牌 (點擊技能牌立即執行)</span>
+            <span id="cd-status" style="font-size:11px; color:#a0aec0;">城牆 CD: 可使用</span>
+        </div>
+        <div class="cards-container" id="cards-container"></div>
+    </div>
+
+    <div id="action-control">
+        <button class="btn-action" id="redraw-btn" onclick="redrawHandCards()">重新抽牌 (重置手牌)</button>
+        <button class="btn-action" id="next-btn" onclick="nextStage()" disabled>下一關 ➔</button>
+    </div>
+
+    <div id="log-panel">
+        <div class="log-entry">冒險開始！配備重騎士專用秘笈【瀕死-防禦10倍轉攻擊】！</div>
+    </div>
+</div>
+
+<script>
+    let customHeroImg = localStorage.getItem('custom_hero') || null;
+    const customEnemyImgs = [
+        localStorage.getItem('custom_enemy_0') || null,
+        localStorage.getItem('custom_enemy_1') || null,
+        localStorage.getItem('custom_enemy_2') || null,
+        localStorage.getItem('custom_enemy_3') || null
+    ];
+
+    const player = {
+        maxHp: 200, hp: 200, maxMp: 50, mp: 50,
+        baseAtk: 15, baseDef: 40, atk: 15, def: 40,
+        isWallActive: false, isBerserk: false,
+        wallCD: 0, poisonStacks: 0
+    };
+
+    const stages = [
+        { name: "劇毒青蛙", defaultSprite: "🐸", hp: 120, atk: 25, def: 10, title: "關卡 1: 野生毒青蛙襲擊", mechanic: "poison" },
+        { name: "詛咒人偶", defaultSprite: "🧸", hp: 250, atk: 35, def: 60, title: "關卡 2: 高防廢棄人偶", mechanic: "high_def" },
+        { name: "連擊娃娃兵", defaultSprite: "💂", hp: 380, atk: 22, def: 25, title: "關卡 3: 三連擊娃娃兵", mechanic: "multi_hit" },
+        { name: "紫色長髮劍聖", defaultSprite: "🥷", hp: 650, atk: 90, def: 45, title: "最終關卡: 紫髮劍聖", mechanic: "boss" }
+    ];
+
+    let currentStageIndex = 0;
+    let enemy = {};
+    let bossCharging = false;
+    let isProcessingTurn = false;
+
+    const skillPool = [
+        { id: 'attack', name: '🗡️ 普通打擊', cost: 0, desc: '造成物理傷害，恢復 10 MP' },
+        { id: 'wall', name: '🏰 城牆', cost: 15, desc: '減傷80%，以150%防禦力反彈傷害' },
+        { id: 'bleed', name: '🩸 主動賣血', cost: 0, desc: '自殘 35% 血量，快步進入瀕死狂暴！' },
+        { id: 'heavy_strike', name: '🔨 重錘粉碎', cost: 20, desc: '無視敵人 50% 防禦力造成重創' },
+        { id: 'heal_guard', name: '🛡️ 鐵壁休養', cost: 10, desc: '回復 35 HP 並獲得休養防護' }
+    ];
+
+    function uploadImage(e, target) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const imgData = evt.target.result;
+            if (target === 'hero') {
+                customHeroImg = imgData;
+                localStorage.setItem('custom_hero', imgData);
+            } else {
+                customEnemyImgs[target] = imgData;
+                localStorage.setItem(`custom_enemy_${target}`, imgData);
+            }
+            updateUI();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function initStage() {
+        const stage = stages[currentStageIndex];
+        enemy = {
+            name: stage.name, maxHp: stage.hp, hp: stage.hp, atk: stage.atk, def: stage.def,
+            defaultSprite: stage.defaultSprite, mechanic: stage.mechanic
+        };
+
+        document.getElementById("stage-title").innerText = stage.title;
+        document.getElementById("enemy-name").innerText = enemy.name;
+        document.getElementById("next-btn").disabled = true;
+        bossCharging = false;
+        player.poisonStacks = 0;
+        player.wallCD = 0;
+        isProcessingTurn = false;
+
+        log(`⚔️ 遇到敵方：${enemy.name}！`, "log-enemy");
+        drawHandCards();
+        updateUI();
+    }
+
+    function drawHandCards() {
+        const container = document.getElementById("cards-container");
+        container.innerHTML = "";
+        
+        let shuffled = [...skillPool].sort(() => 0.5 - Math.random());
+        let hand = shuffled.slice(0, 3);
+
+        hand.forEach(skill => {
+            const btn = document.createElement("button");
+            btn.className = "card-btn";
+            btn.onclick = () => useSkill(skill.id);
+            btn.innerHTML = `
+                <div>${skill.name}</div>
+                <div class="card-cost">MP: ${skill.cost}</div>
+                <div class="card-desc">${skill.desc}</div>
+            `;
+            if (player.mp < skill.cost) btn.disabled = true;
+            if (skill.id === 'wall' && player.wallCD > 0) btn.disabled = true;
+            container.appendChild(btn);
+        });
+        document.getElementById("redraw-btn").disabled = false;
+    }
+
+    function redrawHandCards() {
+        if (isProcessingTurn) return;
+        log(`🔄 重新抽取回合手牌！`, "log-skill");
+        drawHandCards();
+    }
+
+    function checkBerserkState() {
+        if (player.hp / player.maxHp <= 0.3 && !player.isBerserk) {
+            player.isBerserk = true;
+            document.getElementById("hero-buff").style.display = "block";
+            log(`🔥 【專用秘笈觸發】重騎士進入瀕死狀態！防禦力爆發 10 倍並極限轉化攻擊！`, "log-buff");
+        } else if (player.hp / player.maxHp > 0.3 && player.isBerserk) {
+            player.isBerserk = false;
+            document.getElementById("hero-buff").style.display = "none";
+        }
+
+        if (player.isBerserk) {
+            player.def = player.baseDef * 10;
+            player.atk = player.baseAtk + Math.floor(player.def * 0.8);
+        } else {
+            player.def = player.baseDef; player.atk = player.baseAtk;
+        }
+    }
+
+    function updateUI() {
+        checkBerserkState();
+
+        const heroElem = document.getElementById("hero-sprite");
+        if (customHeroImg) {
+            heroElem.style.backgroundImage = `url('${customHeroImg}')`; heroElem.innerText = "";
+        } else {
+            heroElem.style.backgroundImage = "none"; heroElem.innerText = "🛡️";
+        }
+
+        const enemyElem = document.getElementById("enemy-sprite");
+        const currentCustomEnemy = customEnemyImgs[currentStageIndex];
+        if (currentCustomEnemy) {
+            enemyElem.style.backgroundImage = `url('${currentCustomEnemy}')`; enemyElem.innerText = "";
+        } else {
+            enemyElem.style.backgroundImage = "none"; enemyElem.innerText = enemy.defaultSprite;
+        }
+
+        if (player.isWallActive) heroElem.classList.add("wall-active");
+        else heroElem.classList.remove("wall-active");
+
+        const intentBadge = document.getElementById("enemy-intent");
+        if (enemy.mechanic === 'boss' && bossCharging) {
+            intentBadge.style.display = "block";
+            intentBadge.innerText = "⚠️ 蓄力飛天連斬中！";
+        } else {
+            intentBadge.style.display = "none";
+        }
+
+        document.getElementById("hero-hp-text").innerText = `${Math.max(0, player.hp)} / ${player.maxHp}`;
+        document.getElementById("hero-hp-fill").style.width = `${(Math.max(0, player.hp) / player.maxHp) * 100}%`;
+        document.getElementById("hero-mp-text").innerText = `${Math.max(0, player.mp)} / ${player.maxMp}`;
+        document.getElementById("hero-mp-fill").style.width = `${(Math.max(0, player.mp) / player.maxMp) * 100}%`;
+        document.getElementById("hero-atk").innerText = player.atk;
+        document.getElementById("hero-def").innerText = player.def;
+
+        document.getElementById("enemy-hp-text").innerText = `${Math.max(0, enemy.hp)} / ${enemy.maxHp}`;
+        document.getElementById("enemy-hp-fill").style.width = `${(Math.max(0, enemy.hp) / enemy.maxHp) * 100}%`;
+        document.getElementById("enemy-atk").innerText = enemy.atk;
+        document.getElementById("enemy-def").innerText = enemy.def;
+
+        document.getElementById("cd-status").innerText = player.wallCD > 0 ? `城牆 CD: ${player.wallCD} 回合` : `城牆: 可使用`;
+    }
+
+    function triggerShake(elementId) {
+        const elem = document.getElementById(elementId);
+        elem.classList.remove("shake");
+        void elem.offsetWidth;
+        elem.classList.add("shake");
+    }
+
+    function log(msg, className = "") {
+        const logPanel = document.getElementById("log-panel");
+        const div = document.createElement("div");
+        div.className = `log-entry ${className}`;
+        div.innerHTML = msg;
+        logPanel.appendChild(div);
+        logPanel.scrollTop = logPanel.scrollHeight;
+    }
+
+    function useSkill(skillId) {
+        if (enemy.hp <= 0 || player.hp <= 0 || isProcessingTurn) return;
+
+        isProcessingTurn = true;
+        disableAllCards();
+
+        if (skillId === 'attack') {
+            player.isWallActive = false;
+            player.mp = Math.min(player.maxMp, player.mp + 10);
+            let damage = Math.max(1, player.atk - enemy.def);
+            enemy.hp -= damage;
+            triggerShake("enemy-sprite");
+            log(`🛡️ 你進行打擊，對 ${enemy.name} 造成 <b>${damage}</b> 點傷害！(恢復 10 MP)`, "log-hero");
+        } 
+        else if (skillId === 'wall') {
+            player.mp -= 15;
+            player.isWallActive = true;
+            player.wallCD = 3;
+            log(`🏰 發動【城牆】！進入鐵壁姿態準備反彈敵方傷害！`, "log-skill");
+        } 
+        else if (skillId === 'bleed') {
+            let selfDamage = Math.floor(player.hp * 0.35);
+            player.hp -= selfDamage;
+            triggerShake("hero-sprite");
+            log(`🩸 施行主動賣血，扣除自身 <b>${selfDamage}</b> 點生命！`, "log-skill");
+        } 
+        else if (skillId === 'heavy_strike') {
+            player.mp -= 20;
+            player.isWallActive = false;
+            let effectiveDef = Math.floor(enemy.def * 0.5);
+            let damage = Math.max(1, player.atk - effectiveDef);
+            enemy.hp -= damage;
+            triggerShake("enemy-sprite");
+            log(`🔨 重錘貫穿防禦！對 ${enemy.name} 造成 <b>${damage}</b> 點重創！`, "log-skill");
+        } 
+        else if (skillId === 'heal_guard') {
+            player.mp -= 10;
+            player.hp = Math.min(player.maxHp, player.hp + 35);
+            log(`🛡️ 鐵壁休養生效，恢復了 <b>35</b> 點生命！`, "log-hero");
+        }
+
+        updateUI();
+
+        if (checkVictory()) {
+            isProcessingTurn = false;
+            return;
+        }
+
+        setTimeout(enemyTurn, 700);
+    }
+
+    function enemyTurn() {
+        if (enemy.hp <= 0) {
+            isProcessingTurn = false;
+            return;
+        }
+
+        if (player.wallCD > 0) player.wallCD--;
+
+        if (enemy.mechanic === 'poison') {
+            player.poisonStacks++;
+            let poisonDamage = player.poisonStacks * 4;
+            player.hp -= poisonDamage;
+            log(`🤢 劇毒發作，受到 <b>${poisonDamage}</b> 點無視防禦毒傷！`, "log-poison");
+        }
+
+        if (enemy.mechanic === 'boss') {
+            if (!bossCharging) {
+                bossCharging = true;
+                log(`⚠️ 紫髮劍聖蓄力中... 擺出【奧義·飛天連斬】起手姿態！`, "log-enemy");
+                finishEnemyTurn();
+                return;
+            } else {
+                bossCharging = false;
+                log(`⚡ 紫髮劍聖釋放【奧義·飛天連斬】強烈襲來！`, "log-enemy");
+            }
+        }
+
+        let rawDamage = enemy.atk;
+        if (enemy.mechanic === 'boss') rawDamage *= 2.2;
+
+        let hits = enemy.mechanic === 'multi_hit' ? 3 : 1;
+        
+        for (let i = 0; i < hits; i++) {
+            if (player.isWallActive) {
+                let finalDamage = Math.max(1, Math.floor((rawDamage / hits) * 0.2));
+                let reflectDamage = Math.floor(player.def * 1.5);
+
+                player.hp -= finalDamage;
+                enemy.hp -= reflectDamage;
+
+                triggerShake("enemy-sprite");
+                log(`💥 【城牆】阻擋攻擊！受到 <b>${finalDamage}</b> 傷害，反彈 <b>${reflectDamage}</b> 點傷害！`, "log-skill");
+            } else {
+                let finalDamage = Math.max(1, Math.floor(rawDamage / hits) - Math.floor(player.def * 0.4));
+                player.hp -= finalDamage;
+                triggerShake("hero-sprite");
+                log(`⚔️ ${enemy.name} 發動攻擊，造成 <b>${finalDamage}</b> 點傷害。`, "log-enemy");
+            }
+        }
+
+        finishEnemyTurn();
+    }
+
+    function finishEnemyTurn() {
+        player.isWallActive = false;
+        updateUI();
+
+        if (checkVictory()) {
+            isProcessingTurn = false;
+            return;
+        }
+
+        if (player.hp <= 0) {
+            log(`💀 你在戰鬥中倒下了... 購買貼圖解鎖重玩！`, "log-enemy");
+            disableAllCards();
+            isProcessingTurn = false;
+            setTimeout(() => showPurchaseModal(false), 800);
+            return;
+        }
+
+        drawHandCards();
+        isProcessingTurn = false;
+    }
+
+    function checkVictory() {
+        if (enemy.hp <= 0) {
+            log(`🎉 你擊敗了 ${enemy.name}！`, "log-hero");
+            if (currentStageIndex < stages.length - 1) {
+                document.getElementById("next-btn").disabled = false;
+                log(`👉 請點擊右下角「下一關」繼續前進。`, "log-skill");
+            } else {
+                log(`👑 恭喜通關全關卡！重騎士擊敗紫髮劍聖無雙戰勝！`, "log-buff");
+                setTimeout(() => showPurchaseModal(true), 1000);
+            }
+            disableAllCards();
+            return true;
+        }
+        return false;
+    }
+
+    function showPurchaseModal(isWin) {
+        const modal = document.getElementById("game-over-modal");
+        const title = document.getElementById("modal-title");
+        const desc = document.getElementById("modal-desc");
+        const unlockBtn = document.getElementById("unlock-btn");
+
+        // 每次打開彈窗時，預設隱藏解鎖按鈕
+        unlockBtn.classList.remove("show");
+
+        if (isWin) {
+            title.innerText = "👑 恭喜通關全關卡！";
+            title.style.color = "#f4a261";
+            desc.innerHTML = `你已經順利通關第 4 關，完成所有挑戰！<br><br><b>說明：需要前往購買一份 LINE 貼圖才能再次獲得遊玩資格！</b>`;
+        } else {
+            title.innerText = "☠️ 冒險結束 (你已戰敗)";
+            title.style.color = "#e76f51";
+            desc.innerHTML = `你在戰鬥中倒下了！<br><br><b>說明：需要前往購買一份 LINE 貼圖才能再次遊玩！</b>`;
+        }
+
+        modal.style.display = "flex";
+    }
+
+    /* 點擊購買貼圖後平滑出現「解鎖」按鈕 */
+    function onBuyClick() {
+        setTimeout(() => {
+            const unlockBtn = document.getElementById("unlock-btn");
+            unlockBtn.classList.add("show");
+        }, 300);
+    }
+
+    /* 點擊解鎖按鈕：關閉彈窗並完整重置遊戲 */
+    function unlockAndResetGame() {
+        // 隱藏彈窗
+        document.getElementById("game-over-modal").style.display = "none";
+        
+        // 重置玩家基礎數據
+        player.hp = player.maxHp;
+        player.mp = player.maxMp;
+        player.isWallActive = false;
+        player.isBerserk = false;
+        player.wallCD = 0;
+        player.poisonStacks = 0;
+
+        // 重置關卡
+        currentStageIndex = 0;
+
+        // 清空並重置對戰日誌
+        const logPanel = document.getElementById("log-panel");
+        logPanel.innerHTML = '<div class="log-entry">解鎖成功！全新冒險開始！配備重騎士專用秘笈【瀕死-防禦10倍轉攻擊】！</div>';
+
+        // 初始化第一關
+        initStage();
+    }
+
+    function nextStage() {
+        currentStageIndex++;
+        player.hp = Math.min(player.maxHp, player.hp + 70);
+        player.mp = player.maxMp;
+        initStage();
+    }
+
+    function disableAllCards() {
+        const btns = document.querySelectorAll(".card-btn");
+        btns.forEach(b => b.disabled = true);
+        document.getElementById("redraw-btn").disabled = true;
+    }
+
+    initStage();
+</script>
+</body>
+</html>
